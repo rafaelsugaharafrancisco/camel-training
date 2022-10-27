@@ -21,6 +21,6 @@ Também insere em uma estrutura de dados do tipo lista um objeto desse mesmo tip
 6. Implementar método http do tipo PUT para completar o CRUD.
 
 ## Referências
-* [Documentação Apache Camel] (https://camel.apache.org/manual/rest-dsl.html#_using_dynamic_to_in_rest_dsl)
-* Canal Youtube do [Jasvinder Singh Saggu] (https://www.youtube.com/c/SagguUK)
-* Canal Youtube [Java Techie] (https://www.youtube.com/c/JavaTechie)
+* [Documentação Apache Camel](https://camel.apache.org/manual/rest-dsl.html#_using_dynamic_to_in_rest_dsl)
+* Canal Youtube do [Jasvinder Singh Saggu](https://www.youtube.com/c/SagguUK)
+* Canal Youtube [Java Techie](https://www.youtube.com/c/JavaTechie)
