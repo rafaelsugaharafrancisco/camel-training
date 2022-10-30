@@ -57,7 +57,7 @@ public class MainRoute extends RouteBuilder {
 			.get()
 //				.outType(Employee.class)
 				.to("direct:get-employees")
-			.get("/{employee}").outType(EmployeeDTO.class)
+			.get("/{name}").outType(EmployeeDTO.class)
 				.to("direct:get-employee")
 			.post().type(EmployeeDTO.class)
 				.to("direct:add-employee").outType(EmployeeDTO.class);
@@ -82,7 +82,7 @@ public class MainRoute extends RouteBuilder {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				EmployeeDTO employee = service.getEmployee(exchange.getIn().getHeader("employee", String.class));
+				EmployeeDTO employee = service.getEmployee(exchange.getIn().getHeader("name", String.class));
 
 				exchange.getIn().setBody(employee);
 
@@ -92,7 +92,7 @@ public class MainRoute extends RouteBuilder {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				String name = exchange.getIn().getHeader("employee", String.class);
+				String name = exchange.getIn().getHeader("name", String.class);
 
 				exchange.getIn().removeHeaders("*");
 				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
