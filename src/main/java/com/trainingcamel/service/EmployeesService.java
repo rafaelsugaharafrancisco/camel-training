@@ -3,6 +3,8 @@ package com.trainingcamel.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,5 +45,24 @@ public class EmployeesService {
 		repository.save(employee);
 		
 		return e;
+	}
+
+	@Transactional
+	public EmployeeDTO updateEmployee(EmployeeDTO body) {
+		Employee e = repository.findByNome(body.getNome()).get();
+		e.setCodigo(body.getCodigo());
+		e.setNome(body.getNome());
+		e.setCpf(body.getCpf());
+		e.setSalario(body.getSalario());
+		
+		return new EmployeeDTO(e.getCodigo(), e.getNome(), e.getCpf(), e.getSalario());
+	}
+	
+	@Transactional
+	public void deleteEmployee(String name) {
+		repository.findByNome(name).get();
+		
+		repository.deleteByNome(name);
+		
 	}
 }

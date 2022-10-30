@@ -60,7 +60,11 @@ public class MainRoute extends RouteBuilder {
 			.get("/{name}").outType(EmployeeDTO.class)
 				.to("direct:get-employee")
 			.post().type(EmployeeDTO.class)
-				.to("direct:add-employee").outType(EmployeeDTO.class);
+				.to("direct:add-employee").outType(EmployeeDTO.class)
+			.put().type(EmployeeDTO.class)
+				.to("direct:update-employee").outType(EmployeeDTO.class)
+			.delete("/{name}")
+				.to("direct:delete-employee");
 
 		from("direct:hello").routeId("welcome").setBody(constant("Hello world"));
 
@@ -102,6 +106,52 @@ public class MainRoute extends RouteBuilder {
 		});
 
 		from("direct:add-employee").routeId("add-employee").process(processor);
+		
+		from("direct:update-employee").routeId("update-employee").doTry().process(new Processor() {
+
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				EmployeeDTO employee = service.updateEmployee(exchange.getIn().getBody(EmployeeDTO.class));
+
+				exchange.getIn().setBody(employee);
+
+			}
+
+		}).doCatch(NoSuchElementException.class).process(new Processor() {
+
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				EmployeeDTO employee = exchange.getIn().getBody(EmployeeDTO.class);
+
+				exchange.getIn().removeHeaders("*");
+				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
+				exchange.getIn().setBody(new MessageDto(employee.getNome() + " não encontrado no BD"));
+			}
+
+		});
+		
+		from("direct:delete-employee").routeId("delete-employee").doTry().process(new Processor() {
+
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				service.deleteEmployee(exchange.getIn().getHeader("name", String.class));
+
+				exchange.getIn().removeHeaders("*");
+				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NO_CONTENT.value());
+			}
+
+		}).doCatch(NoSuchElementException.class).process(new Processor() {
+
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				String name = exchange.getIn().getHeader("name", String.class);
+
+				exchange.getIn().removeHeaders("*");
+				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
+				exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
+			}
+
+		});
 	}
 
 }

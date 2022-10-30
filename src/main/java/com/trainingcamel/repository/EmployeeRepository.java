@@ -11,4 +11,6 @@ import com.trainingcamel.model.Employee;
 public interface EmployeeRepository extends JpaRepository<Employee, Long>{
 
 	Optional<Employee> findByNome(String name);
+	
+	void deleteByNome(String nome);
 }
