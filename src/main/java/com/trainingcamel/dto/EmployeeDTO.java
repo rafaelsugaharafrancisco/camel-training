@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee implements Serializable {
+public class EmployeeDTO implements Serializable {
 	
 	private int codigo;
 	private String nome;

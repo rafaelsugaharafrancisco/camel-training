@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.trainingcamel.dto.Employee;
+import com.trainingcamel.dto.EmployeeDTO;
 import com.trainingcamel.service.EmployeesService;
 
 @Component
@@ -19,7 +19,7 @@ public class EmployeeProcessor implements Processor {
 	
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		Employee employee = service.addEmployee(exchange.getIn().getBody(Employee.class));
+		EmployeeDTO employee = service.addEmployee(exchange.getIn().getBody(EmployeeDTO.class));
 		
 		Message message = new DefaultMessage(exchange.getContext());
 		message.setBody(employee);

@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.trainingcamel.dto.Employee;
+import com.trainingcamel.dto.EmployeeDTO;
 import com.trainingcamel.dto.MessageDto;
 import com.trainingcamel.processor.EmployeeProcessor;
 import com.trainingcamel.service.EmployeesService;
@@ -57,10 +57,10 @@ public class MainRoute extends RouteBuilder {
 			.get()
 //				.outType(Employee.class)
 				.to("direct:get-employees")
-			.get("/{employee}").outType(Employee.class)
+			.get("/{employee}").outType(EmployeeDTO.class)
 				.to("direct:get-employee")
-			.post().type(Employee.class)
-				.to("direct:add-employee").outType(Employee.class);
+			.post().type(EmployeeDTO.class)
+				.to("direct:add-employee").outType(EmployeeDTO.class);
 
 		from("direct:hello").routeId("welcome").setBody(constant("Hello world"));
 
@@ -68,7 +68,7 @@ public class MainRoute extends RouteBuilder {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				List<Employee> employees = service.getEmployees();
+				List<EmployeeDTO> employees = service.getEmployees();
 
 				Message message = new DefaultMessage(exchange.getContext());
 				message.setBody(employees);
@@ -82,7 +82,7 @@ public class MainRoute extends RouteBuilder {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				Employee employee = service.getEmployee(exchange.getIn().getHeader("employee", String.class));
+				EmployeeDTO employee = service.getEmployee(exchange.getIn().getHeader("employee", String.class));
 
 				exchange.getIn().setBody(employee);
 
