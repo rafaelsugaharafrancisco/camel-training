@@ -48,10 +48,10 @@ public class EmployeesService {
 	}
 
 	@Transactional
-	public EmployeeDTO updateEmployee(EmployeeDTO body) {
-		Employee e = repository.findByNome(body.getNome()).get();
+	public EmployeeDTO updateEmployee(EmployeeDTO body, String name) {
+		Employee e = repository.findByNome(name).get();
 		e.setCodigo(body.getCodigo());
-		e.setNome(body.getNome());
+		e.setNome(name);
 		e.setCpf(body.getCpf());
 		e.setSalario(body.getSalario());
 		
