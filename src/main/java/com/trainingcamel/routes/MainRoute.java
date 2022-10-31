@@ -10,6 +10,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.support.DefaultMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -31,40 +32,38 @@ public class MainRoute extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 
-		onException(NoSuchElementException.class)
-	    	.handled(true)
+		onException(NoSuchElementException.class).handled(true)
 //	    	.transform().simple("${exception.message}");
 //			.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpStatus.NOT_FOUND.value()));
-	    	.process(new Processor() {
+				.process(new Processor() {
 
-				@Override
-				public void process(Exchange exchange) throws Exception {
-					String name = exchange.getIn().getHeader("name", String.class);
-					
-					exchange.getIn().removeHeader("*");
-					exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
-					exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
-				}
-	    		
-	    	});
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						String name = exchange.getIn().getHeader("name", String.class);
+
+						exchange.getIn().removeHeader("*");
+						exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
+						exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
+					}
+
+				});
 
 		restConfiguration().component("servlet").host("localhost").port(8080).bindingMode(RestBindingMode.auto);
 
 		rest("/api/V1/says/hello").get().produces(MediaType.APPLICATION_JSON_VALUE).to("direct:hello");
 
-		rest("/api/V1/employees")
-			.produces(MediaType.APPLICATION_JSON_VALUE).consumes(MediaType.APPLICATION_JSON_VALUE)
-			.get()
-//				.outType(Employee.class)
-				.to("direct:get-employees")
-			.get("/{name}").outType(EmployeeDTO.class)
-				.to("direct:get-employee")
-			.post().type(EmployeeDTO.class)
-				.to("direct:add-employee").outType(EmployeeDTO.class)
-			.put("/{name}").type(EmployeeDTO.class)
-				.to("direct:update-employee").outType(EmployeeDTO.class)
-			.delete("/{name}")
-				.to("direct:delete-employee");
+		rest("/api/V1/employees").produces(MediaType.APPLICATION_JSON_VALUE).consumes(MediaType.APPLICATION_JSON_VALUE)
+				.get()
+//					.outType(Employee.class)
+					.to("direct:get-employees")
+				.get("/{name}").outType(EmployeeDTO.class)
+					.to("direct:get-employee")
+				.post().type(EmployeeDTO.class)
+					.to("direct:add-employee").outType(EmployeeDTO.class)
+				.put("/{name}").type(EmployeeDTO.class)
+					.to("direct:update-employee").outType(EmployeeDTO.class)
+				.delete("/{name}")
+					.to("direct:delete-employee");
 
 		from("direct:hello").routeId("welcome").setBody(constant("Hello world"));
 
@@ -94,28 +93,26 @@ public class MainRoute extends RouteBuilder {
 
 		});
 
-//		.doCatch(NoSuchElementException.class).process(new Processor() {
-//
-//			@Override
-//			public void process(Exchange exchange) throws Exception {
-//				String name = exchange.getIn().getHeader("name", String.class);
-//
-//				exchange.getIn().removeHeaders("*");
-//				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
-//				exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
-//			}
-//
-//		});
+		from("direct:add-employee").routeId("add-employee").doTry().process(processor)
+				.doCatch(DataIntegrityViolationException.class).process(new Processor() {
 
-		from("direct:add-employee").routeId("add-employee").process(processor);
-		
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						exchange.getIn().removeHeaders("*");
+						exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.BAD_REQUEST.value());
+						exchange.getIn().setBody(new MessageDto("CPF ou código já existe no BD"));
+						
+					}
+					
+				});
+
 		from("direct:update-employee").routeId("update-employee").doTry().process(new Processor() {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
 				EmployeeDTO body = exchange.getIn().getBody(EmployeeDTO.class);
 				String name = exchange.getIn().getHeader("name", String.class);
-				
+
 				EmployeeDTO employee = service.updateEmployee(body, name);
 
 				exchange.getIn().setBody(employee);
@@ -123,7 +120,7 @@ public class MainRoute extends RouteBuilder {
 			}
 
 		});
-		
+
 		from("direct:delete-employee").routeId("delete-employee").doTry().process(new Processor() {
 
 			@Override
