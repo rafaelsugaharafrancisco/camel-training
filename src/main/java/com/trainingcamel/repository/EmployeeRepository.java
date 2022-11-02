@@ -10,7 +10,7 @@ import com.trainingcamel.model.Employee;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long>{
 
-	Optional<Employee> findByFullName(String name);
+	Optional<Employee> findByCode(String code);
 	
-	void deleteByFullName(String nome);
+	void deleteByCode(String code);
 }

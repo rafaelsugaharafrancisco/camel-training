@@ -40,11 +40,11 @@ public class MainRoute extends RouteBuilder {
 
 				@Override
 				public void process(Exchange exchange) throws Exception {
-					String name = exchange.getIn().getHeader("name", String.class);
+					String code = exchange.getIn().getHeader("code", String.class);
 
 					exchange.getIn().removeHeader("*");
 					exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
-					exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
+					exchange.getIn().setBody(new MessageDto("Funcionário com código " + code + " não encontrado no BD"));
 				}
 
 			});
@@ -57,13 +57,13 @@ public class MainRoute extends RouteBuilder {
 				.get()
 //					.outType(Employee.class)
 					.to("direct:get-employees")
-				.get("/{name}").outType(EmployeeDTO.class)
+				.get("/{code}").outType(EmployeeDTO.class)
 					.to("direct:get-employee")
 				.post().type(EmployeeDTO.class)
 					.to("direct:add-employee").outType(EmployeeDTO.class)
-				.put("/{name}").type(EmployeeDTO.class)
+				.put("/{code}").type(EmployeeDTO.class)
 					.to("direct:update-employee").outType(EmployeeDTO.class)
-				.delete("/{name}")
+				.delete("/{code}")
 					.to("direct:delete-employee");
 
 		from("direct:hello").routeId("welcome").setBody(constant("Hello world"));
@@ -86,7 +86,7 @@ public class MainRoute extends RouteBuilder {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				EmployeeDTO employee = service.getEmployee(exchange.getIn().getHeader("name", String.class));
+				EmployeeDTO employee = service.getEmployee(exchange.getIn().getHeader("code", String.class));
 
 				exchange.getIn().setBody(employee);
 
@@ -102,7 +102,9 @@ public class MainRoute extends RouteBuilder {
 				public void process(Exchange exchange) throws Exception {
 					exchange.getIn().removeHeaders("*");
 					exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.BAD_REQUEST.value());
-					exchange.getIn().setBody(new MessageDto("CPF ou código já existe no BD"));
+					
+					EmployeeDTO dto = exchange.getIn().getBody(EmployeeDTO.class);
+					exchange.getIn().setBody(new MessageDto("Funcionário com o CPF " + dto.getCpf() + " já existe no BD"));
 						
 				}
 					
@@ -113,21 +115,33 @@ public class MainRoute extends RouteBuilder {
 			@Override
 			public void process(Exchange exchange) throws Exception {
 				EmployeeDTO body = exchange.getIn().getBody(EmployeeDTO.class);
-				String name = exchange.getIn().getHeader("name", String.class);
+				String code = exchange.getIn().getHeader("code", String.class);
 
-				EmployeeDTO employee = service.updateEmployee(body, name);
+				EmployeeDTO employee = service.updateEmployee(body, code);
 
 				exchange.getIn().setBody(employee);
 
 			}
 
+		}).doCatch(DataIntegrityViolationException.class).process(new Processor() {
+
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				exchange.getIn().removeHeaders("*");
+				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.BAD_REQUEST.value());
+				
+				EmployeeDTO dto = exchange.getIn().getBody(EmployeeDTO.class);
+				exchange.getIn().setBody(new MessageDto("Funcionário com o CPF " + dto.getCpf() + " já existe no BD"));
+					
+			}
+				
 		});
 
 		from("direct:delete-employee").routeId("delete-employee").doTry().process(new Processor() {
 
 			@Override
 			public void process(Exchange exchange) throws Exception {
-				service.deleteEmployee(exchange.getIn().getHeader("name", String.class));
+				service.deleteEmployee(exchange.getIn().getHeader("code", String.class));
 
 				exchange.getIn().removeHeaders("*");
 				exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NO_CONTENT.value());

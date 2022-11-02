@@ -1,3 +1,3 @@
-INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('0002', 'Beltrano', '12345678', 6000.00, current_timestamp, current_timestamp);
-INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('142435', 'Fulano', '00099229', 6200.00, current_timestamp, current_timestamp);
-INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('87666', 'Ciclano', '98978787', 3000.00, current_timestamp, current_timestamp);
+INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('00000002', 'Beltrano', '12345678', 6000.00, current_timestamp, current_timestamp);
+INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('00142435', 'Fulano', '00099229', 6200.00, current_timestamp, current_timestamp);
+INSERT INTO employees (code, full_name, cpf, wage, inserted_at, updated_at) VALUES ('00087666', 'Ciclano', '98978787', 3000.00, current_timestamp, current_timestamp);

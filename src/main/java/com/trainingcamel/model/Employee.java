@@ -24,7 +24,7 @@ public class Employee {
 	private Long id;
 	
 	@NonNull
-	@Column(unique = true, nullable = false, length = 8)
+	@Column(nullable = false, length = 8)
 	private String code;
 	
 	@NonNull

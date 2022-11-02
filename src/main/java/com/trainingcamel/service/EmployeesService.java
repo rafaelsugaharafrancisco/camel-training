@@ -1,8 +1,10 @@
 package com.trainingcamel.service;
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.transaction.Transactional;
 
@@ -27,46 +29,64 @@ public class EmployeesService {
 //	}
 
 	public List<EmployeeDTO> getEmployees() {
-		List<EmployeeDTO> employees = new ArrayList<EmployeeDTO>();
 
-		repository.findAll()
-				.forEach(e -> employees.add(new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage())));
-
-		return employees;
+		return toEmployeeList(repository.findAll());
 	}
 
-	public EmployeeDTO getEmployee(String name) {
-		Employee e = repository.findByFullName(name).get();
+	public EmployeeDTO getEmployee(String code) {
+		Employee e = repository.findByCode(code).get();
 		
-		return new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage());
+		return toEmployeeDto(e);
 	}
 
-	public EmployeeDTO addEmployee(EmployeeDTO e) {
+	public EmployeeDTO addEmployee(EmployeeDTO body) {
 		LocalDateTime currentDateTime = LocalDateTime.now();
-		Employee employee = new Employee(e.getCode(), e.getFullName(), e.getCpf(), e.getWage(), currentDateTime, currentDateTime);
 		
-		repository.save(employee);
+		Random random = new Random();
+		int nextInt = random.nextInt(10000001);
 		
-		return e;
+		DecimalFormat df = new DecimalFormat("00000000");
+		body.setCode(df.format(nextInt));
+		
+		Employee employee = toEmployee(body, currentDateTime);
+		
+		return toEmployeeDto(repository.save(employee));
+		
 	}
 
 	@Transactional
-	public EmployeeDTO updateEmployee(EmployeeDTO body, String name) {
-		Employee e = repository.findByFullName(name).get();
-		e.setCode(body.getCode());
-		e.setFullName(name);
+	public EmployeeDTO updateEmployee(EmployeeDTO body, String code) {
+		Employee e = repository.findByCode(code).get();
+		e.setCode(code);
+		e.setFullName(body.getFullName());
 		e.setCpf(body.getCpf());
 		e.setWage(body.getWage());
 		e.setUpdatedAt(LocalDateTime.now());
 		
-		return new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage());
+		return toEmployeeDto(e);
 	}
 	
 	@Transactional
-	public void deleteEmployee(String name) {
-		repository.findByFullName(name).get();
+	public void deleteEmployee(String code) {
+		repository.findByCode(code).get();
 		
-		repository.deleteByFullName(name);
+		repository.deleteByCode(code);
 		
+	}
+	
+	private EmployeeDTO toEmployeeDto(Employee e) {
+		return new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage());
+	}
+	
+	private Employee toEmployee(EmployeeDTO dto, LocalDateTime currentDateTime) {
+		return new Employee(dto.getCode(), dto.getFullName(), dto.getCpf(), dto.getWage(), currentDateTime, currentDateTime);
+	}
+	
+	private List<EmployeeDTO> toEmployeeList(List<Employee> list) {
+		List<EmployeeDTO> employees = new ArrayList<EmployeeDTO>();
+
+		list.forEach(e -> employees.add(toEmployeeDto(e)));
+
+		return employees;
 	}
 }
