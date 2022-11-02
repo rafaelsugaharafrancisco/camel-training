@@ -32,21 +32,22 @@ public class MainRoute extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 
-		onException(NoSuchElementException.class).handled(true)
+		onException(NoSuchElementException.class)
+			.handled(true)
 //	    	.transform().simple("${exception.message}");
 //			.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpStatus.NOT_FOUND.value()));
-				.process(new Processor() {
+			.process(new Processor() {
 
-					@Override
-					public void process(Exchange exchange) throws Exception {
-						String name = exchange.getIn().getHeader("name", String.class);
+				@Override
+				public void process(Exchange exchange) throws Exception {
+					String name = exchange.getIn().getHeader("name", String.class);
 
-						exchange.getIn().removeHeader("*");
-						exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
-						exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
-					}
+					exchange.getIn().removeHeader("*");
+					exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.NOT_FOUND.value());
+					exchange.getIn().setBody(new MessageDto(name + " não encontrado no BD"));
+				}
 
-				});
+			});
 
 		restConfiguration().component("servlet").host("localhost").port(8080).bindingMode(RestBindingMode.auto);
 
@@ -93,18 +94,19 @@ public class MainRoute extends RouteBuilder {
 
 		});
 
-		from("direct:add-employee").routeId("add-employee").doTry().process(processor)
-				.doCatch(DataIntegrityViolationException.class).process(new Processor() {
+		from("direct:add-employee").routeId("add-employee")
+			.doTry().process(processor)
+			.doCatch(DataIntegrityViolationException.class).process(new Processor() {
 
-					@Override
-					public void process(Exchange exchange) throws Exception {
-						exchange.getIn().removeHeaders("*");
-						exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.BAD_REQUEST.value());
-						exchange.getIn().setBody(new MessageDto("CPF ou código já existe no BD"));
+				@Override
+				public void process(Exchange exchange) throws Exception {
+					exchange.getIn().removeHeaders("*");
+					exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, HttpStatus.BAD_REQUEST.value());
+					exchange.getIn().setBody(new MessageDto("CPF ou código já existe no BD"));
 						
-					}
+				}
 					
-				});
+			});
 
 		from("direct:update-employee").routeId("update-employee").doTry().process(new Processor() {
 

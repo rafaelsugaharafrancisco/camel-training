@@ -1,5 +1,6 @@
 package com.trainingcamel.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,19 +30,21 @@ public class EmployeesService {
 		List<EmployeeDTO> employees = new ArrayList<EmployeeDTO>();
 
 		repository.findAll()
-				.forEach(e -> employees.add(new EmployeeDTO(e.getCodigo(), e.getNome(), e.getCpf(), e.getSalario())));
+				.forEach(e -> employees.add(new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage())));
 
 		return employees;
 	}
 
 	public EmployeeDTO getEmployee(String name) {
-		Employee e = repository.findByNome(name).get();
+		Employee e = repository.findByFullName(name).get();
 		
-		return new EmployeeDTO(e.getCodigo(), e.getNome(), e.getCpf(), e.getSalario());
+		return new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage());
 	}
 
 	public EmployeeDTO addEmployee(EmployeeDTO e) {
-		Employee employee = new Employee(e.getCodigo(), e.getNome(), e.getCpf(), e.getSalario());
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		Employee employee = new Employee(e.getCode(), e.getFullName(), e.getCpf(), e.getWage(), currentDateTime, currentDateTime);
+		
 		repository.save(employee);
 		
 		return e;
@@ -49,20 +52,21 @@ public class EmployeesService {
 
 	@Transactional
 	public EmployeeDTO updateEmployee(EmployeeDTO body, String name) {
-		Employee e = repository.findByNome(name).get();
-		e.setCodigo(body.getCodigo());
-		e.setNome(name);
+		Employee e = repository.findByFullName(name).get();
+		e.setCode(body.getCode());
+		e.setFullName(name);
 		e.setCpf(body.getCpf());
-		e.setSalario(body.getSalario());
+		e.setWage(body.getWage());
+		e.setUpdatedAt(LocalDateTime.now());
 		
-		return new EmployeeDTO(e.getCodigo(), e.getNome(), e.getCpf(), e.getSalario());
+		return new EmployeeDTO(e.getCode(), e.getFullName(), e.getCpf(), e.getWage());
 	}
 	
 	@Transactional
 	public void deleteEmployee(String name) {
-		repository.findByNome(name).get();
+		repository.findByFullName(name).get();
 		
-		repository.deleteByNome(name);
+		repository.deleteByFullName(name);
 		
 	}
 }

@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmployeeDTO implements Serializable {
 	
-	private String codigo;
-	private String nome;
+	private String code;
+	private String fullName;
 	private String cpf;
-	private double salario;
+	private double wage;
 
 }
