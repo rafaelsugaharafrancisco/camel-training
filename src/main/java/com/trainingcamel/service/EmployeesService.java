@@ -1,10 +1,8 @@
 package com.trainingcamel.service;
 
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import javax.transaction.Transactional;
 
@@ -14,12 +12,16 @@ import org.springframework.stereotype.Service;
 import com.trainingcamel.dto.EmployeeDTO;
 import com.trainingcamel.model.Employee;
 import com.trainingcamel.repository.EmployeeRepository;
+import com.trainingcamel.util.CodeGenerator;
 
 @Service
 public class EmployeesService {
 
 	@Autowired
 	private EmployeeRepository repository;
+	
+	@Autowired
+	private CodeGenerator generator;
 
 //	@PostConstruct
 //	private void init() {
@@ -42,11 +44,7 @@ public class EmployeesService {
 	public EmployeeDTO addEmployee(EmployeeDTO body) {
 		LocalDateTime currentDateTime = LocalDateTime.now();
 		
-		Random random = new Random();
-		int nextInt = random.nextInt(10000001);
-		
-		DecimalFormat df = new DecimalFormat("00000000");
-		body.setCode(df.format(nextInt));
+		body.setCode(generator.generateCodeByRandomInt());
 		
 		Employee employee = toEmployee(body, currentDateTime);
 		
@@ -68,9 +66,9 @@ public class EmployeesService {
 	
 	@Transactional
 	public void deleteEmployee(String code) {
-		repository.findByCode(code).get();
+		Employee employee = repository.findByCode(code).get();
 		
-		repository.deleteByCode(code);
+		repository.deleteById(employee.getId());
 		
 	}
 	

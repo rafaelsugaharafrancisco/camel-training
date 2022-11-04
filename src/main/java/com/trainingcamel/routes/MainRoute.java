@@ -20,7 +20,7 @@ import com.trainingcamel.dto.MessageDto;
 import com.trainingcamel.processor.EmployeeProcessor;
 import com.trainingcamel.service.EmployeesService;
 
-@Component
+//@Component
 public class MainRoute extends RouteBuilder {
 
 	@Autowired
